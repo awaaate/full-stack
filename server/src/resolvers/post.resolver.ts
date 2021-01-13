@@ -13,9 +13,13 @@ import {
     UseMiddleware,
 } from "type-graphql";
 import { getConnection } from "typeorm";
+
 import { Post } from "../entities/post.entity";
 import { Updoot } from "../entities/updoot.entity";
 import { User } from "../entities/user.entity";
+import { Comment } from "../entities/comment.entity";
+
+
 import { isAuth } from "../middleware/isAuth";
 import { MyContext } from "../types/ApolloContext";
 
@@ -44,6 +48,11 @@ export class PostResolver {
     @FieldResolver(() => User)
     async creator(@Root() root: Post, @Ctx() { userLoader }: MyContext) {
         return userLoader.load(root.creatorId);
+    }
+    @FieldResolver(() => Comment, { nullable: true })
+    async comments(@Root() root: Post, @Ctx() { commentsLoader }: MyContext) {
+        console.log(commentsLoader);
+        return commentsLoader.load(root.id);
     }
     @FieldResolver(() => Int, { nullable: true })
     async voteStatus(

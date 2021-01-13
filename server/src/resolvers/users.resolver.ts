@@ -1,5 +1,5 @@
 import argon2 from "argon2";
-import { MyContext } from "src/types/ApolloContext";
+import { MyContext } from "../types/ApolloContext";
 import {
     Arg,
     Ctx,
@@ -129,6 +129,7 @@ export class UserResolver {
             };
         }
         req.session.userId = user.id;
+        console.log(req.session.userId)
         return {
             user,
         };

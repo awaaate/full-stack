@@ -1,5 +1,5 @@
 import { MiddlewareFn } from "type-graphql";
-import { MyContext } from "src/types/ApolloContext";
+import { MyContext } from "../types/ApolloContext";
 
 export const isAuth: MiddlewareFn<MyContext> = ({ context }, next) => {
     if (!context.req.session.userId) {

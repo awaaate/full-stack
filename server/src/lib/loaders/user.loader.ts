@@ -1,5 +1,5 @@
 import DataLoader from "dataloader";
-import { User } from "../entities/user.entity";
+import { User } from "../../entities/user.entity";
 
 // [1, 78, 8, 9]
 // [{id: 1, username: 'tim'}, {}, {}, {}]

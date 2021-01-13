@@ -6,10 +6,12 @@ import {
     PrimaryGeneratedColumn,
     BaseEntity,
     OneToMany,
+    ManyToMany,
 } from "typeorm";
 import { ObjectType, Field, Int } from "type-graphql";
 import { Post } from "./post.entity";
 import { Updoot } from "./updoot.entity";
+import { Comment } from "./comment.entity";
 
 @ObjectType()
 @Entity()
@@ -31,6 +33,10 @@ export class User extends BaseEntity {
 
     @OneToMany(() => Post, (post) => post.creator)
     posts: Post[];
+
+    
+    @ManyToMany(() => Comment, (comment) => comment.post)
+    comments: Comment[];
 
     @OneToMany(() => Updoot, (updoot) => updoot.user)
     updoots: Updoot[];
