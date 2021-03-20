@@ -4,11 +4,14 @@ import {
     Column,
     CreateDateColumn,
     Entity,
+    JoinTable,
+    ManyToMany,
     ManyToOne,
     OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from "typeorm";
+import { Topic } from "./topic.entity";
 import { Comment } from "./comment.entity";
 import { Updoot } from "./updoot.entity";
 import { User } from "./user.entity";
@@ -25,11 +28,20 @@ export class Post extends BaseEntity {
 
     @Field()
     @Column()
-    text!: string;
+    content!: string;
+
+    @Field()
+    @Column()
+    slug: string;
 
     @Field()
     @Column({ type: "int", default: 0 })
     points!: number;
+
+    @ManyToMany(() => Topic)
+    @JoinTable()
+    @Field(() => [Topic])
+    topics: Topic[];
 
     @Field(() => Int, { nullable: true })
     voteStatus: number | null;

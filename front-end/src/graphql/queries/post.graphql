@@ -1,13 +1,17 @@
 query Post($id: Int!) {
     post(id: $id) {
         id
+        slug
         title
-        text
-        creatorId
+        content
         updatedAt
         createdAt
         points
         voteStatus
+        topics {
+            id
+            name
+        }
         creator {
             id
             username

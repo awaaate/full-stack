@@ -9,13 +9,12 @@ import {
     Query,
     Resolver,
     Root,
-    UseMiddleware,
+    UseMiddleware
 } from "type-graphql";
-import { getConnection } from "typeorm";
-import { Comment } from "../entities/comment.entity";
-import { User } from "../entities/user.entity";
+import { Comment, User } from "@generated/type-graphql";
 import { isAuth } from "../middleware/isAuth";
 import { MyContext } from "../types/ApolloContext";
+
 
 @InputType()
 class CommentInput {
@@ -33,13 +32,11 @@ export class CommentResolver {
     }
 
     @Query(() => [Comment])
-    async comments(@Arg("postId", () => Int) postId: number) {
-        const comments = await getConnection()
-            .createQueryBuilder()
-            .select("comment")
-            .where("comment.postId =:id", { id: postId })
-            .orderBy("comment.updateAt", "ASC")
-            .getMany();
+    async comments(
+        @Arg("postId", () => Int) postId: number,
+        @Ctx() { prisma }: MyContext
+    ) {
+        const comments = await prisma.comment.findMany({ where: { postId } });
         return comments;
     }
 
@@ -47,47 +44,46 @@ export class CommentResolver {
     @UseMiddleware(isAuth)
     async createComment(
         @Arg("input") input: CommentInput,
-        @Ctx() { req }: MyContext
-    ): Promise<Comment | null> {
-        return Comment.create({
-            ...input,
-            creatorId: req.session && req.session.userId,
-        }).save();
+        @Ctx() { req, prisma }: MyContext
+    ) {
+        const comment = await prisma.comment.create({
+            data: {
+                text: input.text,
+                post: { connect: { id: input.postId } },
+                user: { connect: { id: req.session.userId } },
+            },
+        });
+        return comment;
     }
     @Mutation(() => Comment, { nullable: true })
     @UseMiddleware(isAuth)
     async updateComment(
         @Arg("id", () => Int) id: number,
         @Arg("text") text: string,
-        @Ctx() { req }: MyContext
-    ): Promise<Comment | null> {
-        const results = await getConnection()
-            .createQueryBuilder()
-            .update(Comment)
-            .set({ text, edited: true })
-            .where('id = :id and "creatorId" = :creatorId', {
-                id,
-                creatorId: req.session.userId,
-            })
-            .returning("*")
-            .execute();
-        return results.raw[0];
+        @Ctx() { prisma }: MyContext
+    ) {
+        const comment = await prisma.comment.update({
+            where: { id },
+            data: { text, edited: true },
+        });
+
+        return comment;
     }
 
     @Mutation(() => Boolean)
     @UseMiddleware(isAuth)
     async deleteComment(
         @Arg("id", () => Int) id: number,
-        @Ctx() { req }: MyContext
-    ): Promise<Boolean> {
-        const comment = await Comment.findOne(id);
+        @Ctx() { req, prisma }: MyContext
+    ) {
+        const comment = await prisma.comment.findUnique({ where: { id } });
         if (!comment) {
             return false;
         }
         if (req.session.userId !== comment.creatorId) {
             throw new Error("not authorized");
         }
-        comment.remove()
+        await prisma.comment.delete({ where: { id } });
         return true;
     }
 }

@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Grid, Link } from "@chakra-ui/core";
+import { Box, Button, Flex, Grid, Link } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { Fragment } from "react";

@@ -1,4 +1,4 @@
-import { Button, Box, Flex } from "@chakra-ui/core";
+import { Button, Box, Flex } from "@chakra-ui/react";
 import { Form, Formik, FormikHelpers } from "formik";
 import { InputField } from "./InputField";
 

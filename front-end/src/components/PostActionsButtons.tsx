@@ -1,4 +1,4 @@
-import { IconButton } from "@chakra-ui/core";
+import { IconButton } from "@chakra-ui/react";
 import Link from "next/link";
 import { Fragment } from "react";
 import { useDeletePostMutation, useMeQuery } from "../generated/graphql";

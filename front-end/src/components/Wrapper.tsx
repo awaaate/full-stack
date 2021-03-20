@@ -1,4 +1,4 @@
-import { Box, BoxProps, Flex } from "@chakra-ui/core";
+import { Box, BoxProps, Flex } from "@chakra-ui/react";
 
 export interface WrapperProps {
     variant?: "small" | "regular";

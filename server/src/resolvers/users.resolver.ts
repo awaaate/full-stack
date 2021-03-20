@@ -13,12 +13,12 @@ import {
 } from "type-graphql";
 import { v4 } from "uuid";
 import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from "../constants";
-import { User } from "../entities/user.entity";
 import { UsernamePasswordType } from "../types/UsernamePassword";
 import { sendEmail } from "../utils/sendEmail";
 import { validateRegister } from "../utils/validateRegister";
 import { FieldError } from "../types/FieldError";
 
+import { User } from "@generated/type-graphql";
 @ObjectType()
 class UserResponse {
     @Field(() => [FieldError], { nullable: true })
@@ -41,19 +41,19 @@ export class UserResolver {
     }
 
     @Query(() => User, { nullable: true })
-    async me(@Ctx() { req }: MyContext) {
+    async me(@Ctx() { req, prisma }: MyContext) {
         // you are not logged in
         if (!req.session.userId) {
             return null;
         }
 
-        return User.findOne(req.session.userId);
+        return prisma.user.findUnique({ where: { id: req.session.userId } });
     }
 
     @Mutation(() => UserResponse)
     async register(
         @Arg("options") options: UsernamePasswordType,
-        @Ctx() { req }: MyContext
+        @Ctx() { req, prisma }: MyContext
     ): Promise<UserResponse> {
         const errors = validateRegister(options);
         if (errors) {
@@ -61,26 +61,16 @@ export class UserResolver {
         }
         const hashedPassword = await argon2.hash(options.password);
 
-        let user;
         try {
-            /*   const result = await getConnection()
-                .createQueryBuilder()
-                .insert()
-                .into(User)
-                .values({
+            const user = await prisma.user.create({
+                data: {
                     email: options.email,
                     username: options.username,
                     password: hashedPassword,
-                })
-                .returning("*")
-                .execute(); */
-
-            user = await User.create({
-                email: options.email,
-                username: options.username,
-                password: hashedPassword,
-            }).save();
+                },
+            });
             req.session.userId = user.id;
+
             return { user };
         } catch (error) {
             if (error.code === "23505") {
@@ -104,13 +94,15 @@ export class UserResolver {
     async login(
         @Arg("usernameOrEmail") usernameOrEmail: string,
         @Arg("password") password: string,
-        @Ctx() { req }: MyContext
+        @Ctx() { req, prisma }: MyContext
     ): Promise<UserResponse> {
-        const user = await User.findOne(
-            usernameOrEmail.includes("@")
-                ? { where: { email: usernameOrEmail } }
-                : { where: { username: usernameOrEmail } }
-        );
+        const isEmail = usernameOrEmail.includes("@");
+        const user = await prisma.user.findUnique({
+            where: isEmail
+                ? { email: usernameOrEmail }
+                : { username: usernameOrEmail },
+        });
+
         if (!user) {
             return {
                 errors: [
@@ -129,7 +121,6 @@ export class UserResolver {
             };
         }
         req.session.userId = user.id;
-        console.log(req.session.userId)
         return {
             user,
         };
@@ -151,9 +142,9 @@ export class UserResolver {
     @Mutation(() => Boolean)
     async forgotPassword(
         @Arg("email") email: string,
-        @Ctx() { redis }: MyContext
+        @Ctx() { redis, prisma }: MyContext
     ) {
-        const user = await User.findOne({ where: { email } });
+        const user = await prisma.user.findUnique({ where: { email } });
 
         if (!user) {
             return true;
@@ -176,7 +167,7 @@ export class UserResolver {
     async changePassword(
         @Arg("token") token: string,
         @Arg("newPassword") newPassword: string,
-        @Ctx() { redis, req }: MyContext
+        @Ctx() { redis, req, prisma }: MyContext
     ): Promise<UserResponse> {
         if (newPassword.length <= 2) {
             return {
@@ -196,7 +187,7 @@ export class UserResolver {
             };
         }
         const userIdNum = parseInt(userId);
-        const user = await User.findOne(userIdNum);
+        const user = await prisma.user.findUnique({ where: { id: userIdNum } });
 
         if (!user) {
             return {
@@ -205,7 +196,10 @@ export class UserResolver {
         }
 
         const password = await argon2.hash(newPassword);
-        await User.update({ id: userIdNum }, { password: password });
+        await prisma.user.update({
+            where: { id: userIdNum },
+            data: { password: password },
+        });
 
         //log in after  change password
         redis.del(key);

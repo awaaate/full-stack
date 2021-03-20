@@ -1,10 +1,10 @@
 {
 	"folders": [
 		{
-			"path": "../../../front-end"
+			"path": "server"
 		},
 		{
-			"path": "../.."
+			"path": "front-end"
 		}
 	],
 	"remoteAuthority": "wsl+Ubuntu-20.04",

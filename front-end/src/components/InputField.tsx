@@ -9,23 +9,20 @@ import {
     InputLeftElement,
     Textarea,
     InputProps,
-} from "@chakra-ui/core";
+} from "@chakra-ui/react";
 
 export interface InputFieldProps {
     name: string;
     label: string;
-    textarea?: boolean;
+    inputSize?: string;
     inputLeftElementChildren?: React.ReactNode;
 }
 
 export const InputField: React.FC<
     InputFieldProps & InputHTMLAttributes<HTMLInputElement> & InputProps
-> = ({ label, size: _, inputLeftElementChildren, textarea, ...props }) => {
-    let InputOrTextArea = Input;
+> = ({ label, inputLeftElementChildren, inputSize, ...props }) => {
     let InputIconElement: null | React.ReactNode = null;
-    if (textarea) {
-        InputOrTextArea = Textarea;
-    }
+
     if (inputLeftElementChildren) {
         InputIconElement = (
             <InputLeftElement
@@ -38,12 +35,13 @@ export const InputField: React.FC<
     return (
         <FormControl isInvalid={!!error}>
             <FormLabel htmlFor={props.name}>{label}</FormLabel>
-            <InputGroup>
+            <InputGroup size={inputSize}>
                 {InputIconElement}
-                <InputOrTextArea
+                <Input
                     {...field}
                     {...props}
                     id={field.name}
+                    focusBorderColor="brand.500"
                 />
             </InputGroup>
             {error ? <FormErrorMessage>{error}</FormErrorMessage> : null}

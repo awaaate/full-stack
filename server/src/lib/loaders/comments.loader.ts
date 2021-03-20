@@ -1,9 +1,15 @@
+import { Comment } from "@generated/type-graphql";
+import { PrismaClient } from "@prisma/client";
 import DataLoader from "dataloader";
-import { Comment } from "../../entities/comment.entity";
 
-export const createCommentsLoader = () =>
+
+export const createCommentsLoader = (prisma: PrismaClient) =>
     new DataLoader<number, Comment | null>(async (keys) => {
-        const comments = await Comment.findByIds(keys as any);
+        const comments = await prisma.comment.findMany({
+            where: {
+                id: { in: [...keys] },
+            },
+        });
         const commentIdsToComment: Record<string, Comment> = {};
         comments.forEach((comment) => {
             commentIdsToComment[`${comment.postId}`] = comment;

@@ -1,6 +1,6 @@
-mutation UpdatePost($title: String!, $text: String!, $id: Int!) {
-    updatePost(title: $title, text: $text, id: $id) {
+mutation UpdatePost($input: UpdatePostInput!, $id: Int!) {
+    updatePost(input: $input, id: $id) {
         title
-        text
+        content
     }
 }

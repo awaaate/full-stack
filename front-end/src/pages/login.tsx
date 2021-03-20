@@ -1,86 +1,90 @@
-import { Button, Link } from "@chakra-ui/core";
+import { Button, Heading, Link, Stack } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
+import React from "react";
 import { FaLock, FaUser } from "react-icons/fa";
-import { InputField } from "../components/InputField";
-import { Wrapper } from "../components/Wrapper";
+import { LayoutWrapper } from "../components/layouts/layout.wrapper";
+import { StyledInput } from "../components/shared/StyledInput";
 import { useLoginMutation } from "../generated/graphql";
-import { toErrorsMap } from "../utils/toErrorMap";
 import { withUrqlClientHOC } from "../utils/createUrqlClient";
-import { Layout } from "../components/Layout";
+import { toErrorsMap } from "../utils/toErrorMap";
 
-export interface LoginProps {}
-
-export const Login: React.FC<LoginProps> = ({}) => {
+function Login() {
     const router = useRouter();
     const [, login] = useLoginMutation();
 
     return (
-        <Layout>
-            <Wrapper variant="small" bg="white" p={4} rounded="md" shadow="lg">
-                <Formik
-                    initialValues={{
-                        usernameOrEmail: "",
-                        password: "",
-                    }}
-                    onSubmit={async (values, { setErrors }) => {
-                        const response = await login(values);
+        <LayoutWrapper layout="login">
+            <Heading mb="4" textAlign="center"fontSize="1.5rem"  color="gray.800">
+                Login With Your Account
+            </Heading>
+            <Formik
+                initialValues={{
+                    usernameOrEmail: "",
+                    password: "",
+                }}
+                onSubmit={async (values, { setErrors }) => {
+                    const response = await login(values);
 
-                        if (response.data?.login.errors) {
-                            setErrors(toErrorsMap(response.data.login.errors));
-                        } else if (response.data?.login.user) {
-                            if (typeof router.query.next === "string") {
-                                router.push(router.query.next);
-                            } else {
-                                router.push("/");
-                            }
+                    if (response.data?.login.errors) {
+                        setErrors(toErrorsMap(response.data.login.errors));
+                    } else if (response.data?.login.user) {
+                        if (typeof router.query.next === "string") {
+                            router.push(router.query.next);
                         } else {
-                            console.log(response);
+                            router.push("/");
                         }
-                    }}
-                >
-                    {({ isSubmitting }) => (
-                        <Form>
-                            <InputField
+                    } else {
+                        console.log(response);
+                    }
+                }}
+            >
+                {({ isSubmitting }) => (
+                    <Form>
+                        <Stack spacing="4">
+                            <StyledInput
                                 name="usernameOrEmail"
                                 placeholder="Username or email"
                                 label="Username or email"
                                 inputLeftElementChildren={<FaUser />}
+                                inputSize="lg"
                             />
 
-                            <InputField
+                            <StyledInput
                                 name="password"
                                 placeholder="password"
                                 label="Password"
                                 type="Password"
+                                inputSize="lg"
                                 inputLeftElementChildren={<FaLock />}
                             />
                             <Button
                                 type="submit"
                                 mt={4}
                                 isLoading={isSubmitting}
-                                variantColor="orange"
+                                colorScheme="brand"
                                 w="100%"
+                                size="lg"
                             >
                                 login
                             </Button>
-                            <NextLink href="/forgot-password">
-                                <Link
-                                    color="blue.500"
-                                    textAlign="center"
-                                    display="block"
-                                    pt="2"
-                                >
-                                    Forgot password?
-                                </Link>
-                            </NextLink>
-                        </Form>
-                    )}
-                </Formik>
-            </Wrapper>
-        </Layout>
+                        </Stack>
+                        <NextLink href="/forgot-password">
+                            <Link
+                                color="blue.500"
+                                textAlign="center"
+                                display="block"
+                                pt="2"
+                            >
+                                Forgot password?
+                            </Link>
+                        </NextLink>
+                    </Form>
+                )}
+            </Formik>
+        </LayoutWrapper>
     );
-};
-
+}
+Login.layout = "login";
 export default withUrqlClientHOC()(Login);

@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator typegraphql {
+  provider = "typegraphql-prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  text      String
+  edited    Boolean  @default(false)
+  postId    Int
+  creatorId Int
+  user      User     @relation(fields: [creatorId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model Post {
+  id        Int       @id @default(autoincrement())
+  title     String
+  content   String
+  slug      String
+  points    Int       @default(0)
+  creatorId Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
+  user      User      @relation(fields: [creatorId], references: [id])
+  comment   Comment[]
+  topics    Topic[]
+  updoot    Updoot[]
+}
+
+model Topic {
+  id     Int    @id @default(autoincrement())
+  name   String @unique
+  Post   Post?  @relation(fields: [postId], references: [id])
+  postId Int?
+}
+
+model Updoot {
+  value  Int
+  userId Int
+  postId Int
+  post   Post @relation(fields: [postId], references: [id])
+  user   User @relation(fields: [userId], references: [id])
+
+  @@id([userId, postId])
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+ /// @TypeGraphQL.omit(output: true)
+  email     String    @unique
+  /// @TypeGraphQL.omit(output: true)
+  password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
+  comment   Comment[]
+  post      Post[]
+  updoot    Updoot[]
+
+}

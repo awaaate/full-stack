@@ -1,4 +1,4 @@
-import { Heading, Text, Flex, Box } from "@chakra-ui/core";
+import { Heading, Text, Flex, Box } from "@chakra-ui/react";
 import { Layout } from "../../components/Layout";
 import { usePostQuery } from "../../generated/graphql";
 import { withUrqlClientHOC } from "../../utils/createUrqlClient";

@@ -7,6 +7,7 @@ import {
     BaseEntity,
     OneToMany,
     ManyToMany,
+    JoinTable,
 } from "typeorm";
 import { ObjectType, Field, Int } from "type-graphql";
 import { Post } from "./post.entity";
@@ -34,7 +35,11 @@ export class User extends BaseEntity {
     @OneToMany(() => Post, (post) => post.creator)
     posts: Post[];
 
-    
+    @ManyToMany(() => Post)
+    @JoinTable()
+    @Field(() => [Post])
+    bookmarks: Post[];
+
     @ManyToMany(() => Comment, (comment) => comment.post)
     comments: Comment[];
 

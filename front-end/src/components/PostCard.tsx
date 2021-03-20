@@ -7,7 +7,7 @@ import {
     Link,
     Stack,
     Text,
-} from "@chakra-ui/core";
+} from "@chakra-ui/react";
 import NextLink from "next/link";
 import { useState } from "react";
 import { PostSnippetFragment, useVoteMutation } from "../generated/graphql";
@@ -122,17 +122,15 @@ export const PostCard: React.FC<PostCardProps> = ({ posts }) => {
                             border="1px solid"
                             borderColor="gray.300"
                             rounded="md"
-                            bg="white"
+                            bg="gray.100"
                             w="100%"
                             h="100%"
                         >
-                            <NextLink href="post/[id]" as={`/post/${id}`}>
+                            <NextLink href={`idea/${post.id}`}>
                                 <Link>
                                     <Heading fontSize="xl">{title}</Heading>
                                 </Link>
                             </NextLink>
-                            <Text>{textSnippet}...</Text>
-
                             <Flex
                                 color="gray.700"
                                 fontWeight={400}
